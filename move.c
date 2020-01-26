@@ -2,12 +2,27 @@
 
 #include <ncurses.h>
 
-int move_loop(WINDOW *dialogue_window, int **board, const int BOARD_ROWS, const int BOARD_COLS, int player) {
+enum win_conditions move_loop(WINDOW *dialogue_window, int **board, const int BOARD_ROWS, const int BOARD_COLS, int player) {
     int valid_move = 0;
     int x, y;
+    char input;
+
+    // Check the board isn't full
+    int col;
+    for (col = 0; col < BOARD_COLS; col++) {
+        if (board[BOARD_ROWS - 1][col] == 0) {
+            break;
+        } else if (col == BOARD_COLS - 1) {
+            return Draw;
+        }
+    }
 
     while ( !valid_move ) {
-        x = wgetch(dialogue_window) - '0' - 1; // get char '1'-'7' and convert to int of value 0-7
+        input = wgetch(dialogue_window); // get char '1'-'7' and convert to int of value 0-7
+        if (input == 'r')
+            return Reset;
+
+        x = input - '0' - 1;
         if ( x >= 0 && x < BOARD_COLS ) {
             y = player_move(board, BOARD_ROWS, player, x);
             if ( y > -1 )
@@ -29,7 +44,7 @@ int player_move(int **board, const int BOARD_ROWS, int player, int x) {
     return -1;
 }
 
-int check_all_wins(int **board, const int BOARD_ROWS, const int BOARD_COLS, int x, int y) {
+enum win_conditions check_all_wins(int **board, const int BOARD_ROWS, const int BOARD_COLS, int x, int y) {
     int dir_x, dir_y;
 
     int dirs[4][2] = {
@@ -43,10 +58,12 @@ int check_all_wins(int **board, const int BOARD_ROWS, const int BOARD_COLS, int 
     for (dir = 0; dir < 4; dir++) {
         dir_x = dirs[dir][0];
         dir_y = dirs[dir][1];
+
+        // Check squares in a row in opposing directions
         if ((check_win(board, BOARD_ROWS, BOARD_COLS, x, y, dir_x, dir_y, 1) + check_win(board, BOARD_ROWS, BOARD_COLS, x, y, -dir_x, -dir_y, 0)) >= 4)
-            return 1;
+            return Win; // win
     }
-    return 0;
+    return No_Win; // no win
 }
 
 int check_win(int **board, const int BOARD_ROWS, const int BOARD_COLS, int x, int y, int dir_x, int dir_y, int inarow) {

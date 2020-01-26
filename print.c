@@ -22,9 +22,9 @@ void print_pieces(WINDOW *game_window, int **board, const int BOARD_ROWS, const 
 
     for (y=0; y<BOARD_ROWS; y++) {
         for (x=0; x<BOARD_COLS; x++) {
-                wattron(game_window, COLOR_PAIR(board[y][x]));
-                print_piece(game_window, x, y);
-                wattroff(game_window, COLOR_PAIR(board[y][x]));
+            wattron(game_window, COLOR_PAIR(board[y][x]));
+            print_piece(game_window, x, y);
+            wattroff(game_window, COLOR_PAIR(board[y][x]));
         }
     }
     wmove(game_window, 0, 0);

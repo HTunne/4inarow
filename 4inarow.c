@@ -1,31 +1,34 @@
-#include "4inarow.h"
+#include <stdlib.h>
+#include <ncurses.h>
 
+#include "print.h"
+#include "move.h"
+#include "dialogue.h"
 
 void init_board(int **board, int BOARD_ROWS, int BOARD_COLS);
-void print_board (WINDOW *game_window);
-void print_piece(WINDOW *game_window, int y, int x);
-void print_pieces(WINDOW *game_window, int **board, const int BOARD_ROWS, const int BOARD_COLS);
-int move_loop(WINDOW *text_window, int **board, const int BOARD_ROWS, const int BOARD_COLS, int player);
-int player_move(int **board, const int BOARD_ROWS, int player, int x);
-int check_all_wins(int **board, const int BOARD_ROWS, const int BOARD_COLS, int x, int y);
-int check_win(int **board, const int BOARD_ROWS, const int BOARD_COLS, int x, int y, int dir_x, int dir_y, int inarow);
 
 int main() {
+
     const int BOARD_ROWS = 8;
     const int BOARD_COLS = 7;
+    const int game_window_h_offset = 4;
+    const int window_w_offset = 5;
+    const int title_window_height = 6;
+    const int dialogue_window_height = 6;
 
-    WINDOW *game_window;
-    WINDOW *text_window;
+    int start_x, start_y, window_width, game_window_height;
+    enum win_conditions win_condition = No_Win;
+    int play_again = 1;
+    int player = 2; // start on player 2 as player will flip before first move
 
-    int start_x, start_y, width, height;
-    int win_condition = 0;
-    int player = 2;
-
+    // Allocate board as an array of pointers to arrays
     int **board = (int **)malloc(BOARD_ROWS * sizeof(int *));
     for (int row = 0; row < BOARD_ROWS; row++)
         board[row] = (int *)malloc(BOARD_COLS * sizeof(int));
 
-    init_board(board, BOARD_ROWS, BOARD_COLS);
+    WINDOW *title_window;
+    WINDOW *game_window;
+    WINDOW *dialogue_window;
 
     initscr();
     start_color();
@@ -33,48 +36,49 @@ int main() {
     cbreak();
     curs_set(0);
 
-    height = (2 * BOARD_ROWS) + 3;
-    width = (5 * BOARD_COLS) + 5;
-    start_y = 24;
-	start_x = 0;
-
     init_pair(1, COLOR_YELLOW, COLOR_BLACK);
     init_pair(2, COLOR_RED, COLOR_BLACK);
     init_pair(3, COLOR_BLUE, COLOR_BLACK);
 
-    game_window = newwin(height, width, start_y, start_x);
-    text_window = newwin(6, width, start_y + height, start_x);
+    game_window_height = (2 * BOARD_ROWS) + game_window_h_offset;
+    window_width = (5 * BOARD_COLS) + window_w_offset;
+    start_y = (LINES - (title_window_height + game_window_height + dialogue_window_height)) / 2;
+	start_x = (COLS - window_width) / 2;
 
-    box(text_window, 0, 0);
-    wrefresh(text_window);
+    title_window = newwin(title_window_height, window_width, start_y, start_x);
+    game_window = newwin(game_window_height, window_width, start_y + title_window_height, start_x);
+    dialogue_window = newwin(dialogue_window_height, window_width, start_y + title_window_height + game_window_height, start_x);
 
-    box(game_window, 0, 0);
-    wrefresh(game_window);
+    print_title(title_window);
 
-    //game loop
     print_board(game_window);
-    print_pieces(game_window, board, BOARD_ROWS, BOARD_COLS);
-    while ( !win_condition ) {
-        if ( player == 1 ) {
-            player = 2;
-        } else {
-            player = 1;
-        }
-        win_condition = move_loop(text_window, board, BOARD_ROWS, BOARD_COLS, player);
+
+    while (play_again) {
+        //game loop
+        init_board(board, BOARD_ROWS, BOARD_COLS);
         print_pieces(game_window, board, BOARD_ROWS, BOARD_COLS);
+
+        win_condition = No_Win;
+
+        while ( win_condition == No_Win ) {
+            if ( player == 1 ) {
+                player = 2;
+            } else {
+                player = 1;
+            }
+            move_dialog(dialogue_window, player);
+            win_condition = move_loop(dialogue_window, board, BOARD_ROWS, BOARD_COLS, player);
+            print_pieces(game_window, board, BOARD_ROWS, BOARD_COLS);
+        }
+
+        if (win_condition == Reset) {
+            play_again = 1;
+        } else {
+            play_again = play_again_dialogue(dialogue_window, player, win_condition);
+        }
+
     }
 
-    wclear(text_window);
-    wattron(text_window, COLOR_PAIR(player));
-    mvwaddch(text_window, 2, 3, ACS_BLOCK);
-    waddch(text_window, ACS_BLOCK);
-    wattroff(text_window, COLOR_PAIR(player));
-    wprintw(text_window, " wins!!\n");
-    box(text_window, 0, 0);
-    wrefresh(text_window);
-
-    while ( 1 ) {
-    }
 
     endwin();
     return 0;
@@ -85,107 +89,6 @@ void init_board(int **board, int BOARD_ROWS, int BOARD_COLS) {
         for (int col = 0; col < BOARD_COLS; col++) {
             board[row][col] = 0;
         }
-    }
-}
-
-void print_board(WINDOW *game_window) {
-    int x, y;
-
-    for ( y=0; y<18; y++ ) {
-        for ( x=2; x<38; x++ ) {
-            wattron(game_window, COLOR_PAIR(3));
-            mvwaddch(game_window, y, x, ACS_BLOCK);
-            wattroff(game_window, COLOR_PAIR(3));
-        }
-    }
-    box(game_window, 0, 0);
-    wrefresh(game_window);
-}
-
-void print_pieces(WINDOW *game_window, int **board, const int BOARD_ROWS, const int BOARD_COLS) {
-    int x, y;
-
-    for (y=0; y<BOARD_ROWS; y++) {
-        for (x=0; x<BOARD_COLS; x++) {
-                wattron(game_window, COLOR_PAIR(board[y][x]));
-                print_piece(game_window, x, y);
-                wattroff(game_window, COLOR_PAIR(board[y][x]));
-        }
-    }
-    wmove(game_window, 0, 0);
-    wrefresh(game_window);
-}
-
-void print_piece(WINDOW *game_window, int x, int y) {
-    int print_x = (5 * x) + 4;
-    int print_y = (2 * -y) + 16;
-    mvwaddch(game_window, print_y, print_x, ACS_BLOCK); waddch(game_window, ACS_BLOCK);
-}
-
-int move_loop(WINDOW *text_window, int **board, const int BOARD_ROWS, const int BOARD_COLS, int player) {
-    int valid_move = 0;
-    int x, y;
-
-    while ( !valid_move ) {
-        wclear(text_window);
-        wattron(text_window, COLOR_PAIR(player));
-        mvwaddch(text_window, 2, 3, ACS_BLOCK);
-        waddch(text_window, ACS_BLOCK);
-        wattroff(text_window, COLOR_PAIR(player));
-        wprintw(text_window, "'s move.!!");
-        mvwprintw(text_window, 3, 3, "Choose column...");
-        box(text_window, 0, 0);
-        wrefresh(text_window);
-
-        x = wgetch(text_window) - '0';
-        if ( x >= 0 && x < BOARD_COLS ) {
-            y = player_move(board, BOARD_ROWS, player, x);
-            if ( y > -1 )
-                valid_move = 1;
-        }
-    }
-    return check_all_wins(board, BOARD_ROWS, BOARD_COLS, x, y);
-}
-
-int player_move(int **board, const int BOARD_ROWS, int player, int x) {
-    int y;
-
-    for (y = 0; y < BOARD_ROWS; y++) {
-        if (board[y][x] == 0) {
-            board[y][x] = player;
-            return y;
-        }
-    }
-    return -1;
-}
-
-int check_all_wins(int **board, const int BOARD_ROWS, const int BOARD_COLS, int x, int y) {
-    int dir_x, dir_y;
-
-    for (dir_x=-1; dir_x<2; dir_x++)
-        for (dir_y=-1; dir_y<2; dir_y++) {
-            if ( !(dir_x==0 && dir_y==0) )
-                if (check_win(board, BOARD_ROWS, BOARD_COLS, x, y, dir_x, dir_y, 1))
-                    return 1;
-        }
-    return 0;
-}
-
-int check_win(int **board, const int BOARD_ROWS, const int BOARD_COLS, int x, int y, int dir_x, int dir_y, int inarow) {
-    // Recusively crawls from (x, y) in direction (dir_x, dir_y) until...
-    if ( inarow == 4 ) { // 4 in a row found, win!
-        return 1;
-    } else if (
-            x + dir_x < 0 ||                // hits left side of board, no win
-            x + dir_x > (BOARD_COLS-1) ||   // hits right side of board, no win
-            y + dir_y < 0 ||                // hits bottom of board, no win
-            y + dir_y > (BOARD_ROWS-1)      // hits top of board, no win
-            ) {
-        return 0;
-    } else if ( board[y][x] != board[y+dir_y][x+dir_x] ) { // hits empty or opposing players square, no win
-        return 0;
-    } else {
-        check_win(board, BOARD_ROWS, BOARD_COLS, x+dir_x, y+dir_y, dir_x, dir_y, inarow + 1); // check next square and increment inarow counter
     }
 }
 
