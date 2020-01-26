@@ -5,16 +5,18 @@
 #include "move.h"
 #include "dialogue.h"
 
-void init_board(int **board, int BOARD_ROWS, int BOARD_COLS);
+void init_board(int **board, int board_rows, int board_cols);
 
 int main() {
 
-    const int BOARD_ROWS = 8;
-    const int BOARD_COLS = 7;
+    const int board_rows = 8;
+    const int board_cols = 7;
     const int game_window_h_offset = 4;
     const int window_w_offset = 5;
     const int title_window_height = 6;
     const int dialogue_window_height = 6;
+    const int width_p_col = 5;
+    const int height_p_row = 2;
 
     int start_x, start_y, window_width, game_window_height;
     enum win_conditions win_condition = No_Win;
@@ -22,9 +24,9 @@ int main() {
     int player = 2; // start on player 2 as player will flip before first move
 
     // Allocate board as an array of pointers to arrays
-    int **board = (int **)malloc(BOARD_ROWS * sizeof(int *));
-    for (int row = 0; row < BOARD_ROWS; row++)
-        board[row] = (int *)malloc(BOARD_COLS * sizeof(int));
+    int **board = (int **)malloc(board_rows * sizeof(int *));
+    for (int row = 0; row < board_rows; row++)
+        board[row] = (int *)malloc(board_cols * sizeof(int));
 
     WINDOW *title_window;
     WINDOW *game_window;
@@ -36,12 +38,12 @@ int main() {
     cbreak();
     curs_set(0);
 
-    init_pair(1, COLOR_YELLOW, COLOR_BLACK);
-    init_pair(2, COLOR_RED, COLOR_BLACK);
+    init_pair(1, COLOR_YELLOW, COLOR_BLACK);    // Piece colour for player 1
+    init_pair(2, COLOR_RED, COLOR_BLACK);       // Piece colour for player 2
     init_pair(3, COLOR_BLUE, COLOR_BLACK);
 
-    game_window_height = (2 * BOARD_ROWS) + game_window_h_offset;
-    window_width = (5 * BOARD_COLS) + window_w_offset;
+    game_window_height = (height_p_row * board_rows) + game_window_h_offset;
+    window_width = (width_p_col * board_cols) + window_w_offset;
     start_y = (LINES - (title_window_height + game_window_height + dialogue_window_height)) / 2;
 	start_x = (COLS - window_width) / 2;
 
@@ -55,8 +57,10 @@ int main() {
 
     while (play_again) {
         //game loop
-        init_board(board, BOARD_ROWS, BOARD_COLS);
-        print_pieces(game_window, board, BOARD_ROWS, BOARD_COLS);
+
+        // setup a new game
+        init_board(board, board_rows, board_cols);
+        print_pieces(game_window, board, board_rows, board_cols, width_p_col, height_p_row);
 
         win_condition = No_Win;
 
@@ -67,26 +71,25 @@ int main() {
                 player = 1;
             }
             move_dialog(dialogue_window, player);
-            win_condition = move_loop(dialogue_window, board, BOARD_ROWS, BOARD_COLS, player);
-            print_pieces(game_window, board, BOARD_ROWS, BOARD_COLS);
+            win_condition = move_loop(dialogue_window, board, board_rows, board_cols, player);
+            print_pieces(game_window, board, board_rows, board_cols, width_p_col, height_p_row);
         }
 
         if (win_condition == Reset) {
             play_again = 1;
-        } else {
+        } else { // Win or Draw
             play_again = play_again_dialogue(dialogue_window, player, win_condition);
         }
 
     }
 
-
     endwin();
     return 0;
 }
 
-void init_board(int **board, int BOARD_ROWS, int BOARD_COLS) {
-    for (int row = 0; row < BOARD_ROWS; row++) {
-        for (int col = 0; col < BOARD_COLS; col++) {
+void init_board(int **board, int board_rows, int board_cols) {
+    for (int row = 0; row < board_rows; row++) {
+        for (int col = 0; col < board_cols; col++) {
             board[row][col] = 0;
         }
     }
