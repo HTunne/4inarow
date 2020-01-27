@@ -73,16 +73,15 @@ enum win_conditions check_all_wins(int **board, const int board_rows, const int 
 int check_win(int **board, const int board_rows, const int board_cols, const int x, const int y, const int dir_x, const int dir_y, int inarow) {
     // Recusively crawls from (x, y) in direction (dir_x, dir_y) until...
     if (
-        x + dir_x < 0 ||                // hits left side of board, no win
-        x + dir_x > (board_cols - 1) ||   // hits right side of board, no win
-        y + dir_y < 0 ||                // hits bottom of board, no win
-        y + dir_y > (board_rows - 1)      // hits top of board, no win
+        x + dir_x < 0 ||                            // hits left side of board, no win
+        x + dir_x > (board_cols - 1) ||             // hits right side of board, no win
+        y + dir_y < 0 ||                            // hits bottom of board, no win
+        y + dir_y > (board_rows - 1) ||             // hits top of board, no win
+        board[y][x] != board[y + dir_y][x + dir_x]  // hits empty or opposing players square, no win
        ) {
         return inarow;
-    } else if ( board[y][x] != board[y + dir_y][x + dir_x] ) { // hits empty or opposing players square, no win
-        return inarow;
     } else {
-        inarow = check_win(board, board_rows, board_cols, x+dir_x, y+dir_y, dir_x, dir_y, inarow + 1); // check next square and increment inarow counter
+        return check_win(board, board_rows, board_cols, x+dir_x, y+dir_y, dir_x, dir_y, inarow + 1); // check next square and increment inarow counter
     }
 }
 
