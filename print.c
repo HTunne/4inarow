@@ -20,13 +20,17 @@ void print_board(WINDOW *game_window) {
 }
 
 void print_pieces(WINDOW *game_window, int **board, const int board_rows, const int board_cols, const int width_p_col, const int height_p_row) {
+    // Loop through board and print prieces.
     int x, y;
+    const int piece_offset_x = 4;
+    const int piece_offset_y = 17;
 
     for (y=0; y<board_rows; y++) {
         for (x=0; x<board_cols; x++) {
+            // Select colour based on value in board[y][x]
             wattron(game_window, COLOR_PAIR(board[y][x]));
-            int print_x = (width_p_col * x) + 4;
-            int print_y = (height_p_row * -y) + 17;
+            int print_x = (width_p_col * x) + piece_offset_x;
+            int print_y = (height_p_row * -y) + piece_offset_y;
             mvwaddch(game_window, print_y, print_x, ACS_BLOCK); waddch(game_window, ACS_BLOCK);
             wattroff(game_window, COLOR_PAIR(board[y][x]));
         }
@@ -36,7 +40,12 @@ void print_pieces(WINDOW *game_window, int **board, const int board_rows, const 
 }
 
 void print_title(WINDOW *title_window) {
-    mvwprintw(title_window, 0, 0, " _  _   _\n| || | (_)_ __   __ _ _ __ _____      _\n| || |_| | '_ \\ / _` | '__/ _ \\ \\ /\\ / \n|__   _| | | | | (_| | | | (_) \\ V  V /\n   |_| |_|_| |_|\\__,_|_|  \\___/ \\_/\\_/");
+    //print title into title window
+    mvwprintw(title_window, 1, 0,
+            "| || | (_)_ __   __ _ _ __ _____      _\n"
+            "| || |_| | '_ \\ / _` | '__/ _ \\ \\ /\\ / \n"
+            "|__   _| | | | | (_| | | | (_) \\ V  V /\n"
+            "   |_| |_|_| |_|\\__,_|_|  \\___/ \\_/\\_/");
     box(title_window, 0, 0);
     wrefresh(title_window);
 }

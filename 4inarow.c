@@ -42,6 +42,7 @@ int main() {
     init_pair(2, COLOR_RED, COLOR_BLACK);       // Piece colour for player 2
     init_pair(3, COLOR_BLUE, COLOR_BLACK);
 
+    // Geometry for window sizes
     game_window_height = (height_p_row * board_rows) + game_window_h_offset;
     window_width = (width_p_col * board_cols) + window_w_offset;
     start_y = (LINES - (title_window_height + game_window_height + dialogue_window_height)) / 2;
@@ -59,10 +60,9 @@ int main() {
         //game loop
 
         // setup a new game
+        win_condition = No_Win;
         init_board(board, board_rows, board_cols);
         print_pieces(game_window, board, board_rows, board_cols, width_p_col, height_p_row);
-
-        win_condition = No_Win;
 
         while ( win_condition == No_Win ) {
             if ( player == 1 ) {

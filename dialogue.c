@@ -4,9 +4,11 @@
 #include "move.h"
 
 int play_again_dialogue(WINDOW* dialogue_window, int player, enum win_conditions win_condition) {
+    // Select dialogue based on win condition
     char response;
 
     wclear(dialogue_window);
+
     if (win_condition == Win) {
         wattron(dialogue_window, COLOR_PAIR(player));
         mvwaddch(dialogue_window, 2, 3, ACS_BLOCK);
@@ -16,6 +18,7 @@ int play_again_dialogue(WINDOW* dialogue_window, int player, enum win_conditions
     } else if (win_condition == Draw) {
         mvwprintw(dialogue_window, 2, 3, "It's a draw!");
     }
+
     mvwprintw(dialogue_window, 3, 3, "Play again? [y/n]");
     box(dialogue_window, 0, 0);
     wrefresh(dialogue_window);

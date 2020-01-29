@@ -8,8 +8,8 @@ enum win_conditions move_loop(WINDOW *dialogue_window, int **board, const int bo
     char input;
 
     // Check the board isn't full
-    int col;
     int its_a_draw = 1;
+    int col;
     for (col = 0; col < board_cols; col++) {
         if (board[board_rows - 1][col] == 0) {
             its_a_draw = 0; // Empty square found, it's not a draw
@@ -51,6 +51,7 @@ int player_move(int **board, const int board_rows, const int player, const int x
 enum win_conditions check_all_wins(int **board, const int board_rows, const int board_cols, const int x, const int y) {
     int dir_x, dir_y;
 
+    // Directions in (x,y) to check
     int dirs[4][2] = {
         {0, 1},
         {1, 1},
