@@ -1,9 +1,11 @@
 #include "dialogue.h"
 
+#include <stdbool.h>
 #include <ncurses.h>
 #include "move.h"
+#include "print.h"
 
-int play_again_dialogue(WINDOW* dialogue_window, int player, enum win_conditions win_condition) {
+bool play_again_dialogue(WINDOW* dialogue_window, const enum players player, enum win_conditions win_condition) {
     // Select dialogue based on win condition
     char response;
 
@@ -28,11 +30,11 @@ int play_again_dialogue(WINDOW* dialogue_window, int player, enum win_conditions
     }
 
     if (response == 'y')
-        return 1;
-    return 0;
+        return true;
+    return false;
 }
 
-void move_dialog(WINDOW* dialogue_window, int player) {
+void move_dialog(WINDOW* dialogue_window, const enum players player) {
     wclear(dialogue_window);
     wattron(dialogue_window, COLOR_PAIR(player));
     mvwaddch(dialogue_window, 2, 3, ACS_BLOCK);

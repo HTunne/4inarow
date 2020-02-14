@@ -1,26 +1,26 @@
 #include "move.h"
 
+#include <stdbool.h>
 #include <ncurses.h>
+#include "print.h"
 
-enum win_conditions move_loop(WINDOW *dialogue_window, int **board, const int board_rows, const int board_cols, const int player) {
-    int valid_move = 0;
-    int x, y;
-    char input;
+enum win_conditions move_loop(WINDOW *dialogue_window, int **board, const int board_rows, const int board_cols, const enum players player) {
 
     // Check the board isn't full
-    int its_a_draw = 1;
-    int col;
-    for (col = 0; col < board_cols; col++) {
+    bool its_a_draw = true;
+    for (int col = 0; col < board_cols; col++) {
         if (board[board_rows - 1][col] == 0) {
-            its_a_draw = 0; // Empty square found, it's not a draw
+            its_a_draw = false; // Empty square found, it's not a draw
             break;
         }
     }
-
     if (its_a_draw) {
         return Draw;
     }
 
+    int x, y;
+    char input;
+    bool valid_move = false;
     while ( !valid_move ) {
         input = wgetch(dialogue_window); // get char '1'-'7' and convert to int of value 0-7
         if (input == 'r')
@@ -30,13 +30,13 @@ enum win_conditions move_loop(WINDOW *dialogue_window, int **board, const int bo
         if ( x >= 0 && x < board_cols ) {
             y = player_move(board, board_rows, player, x);
             if ( y > -1 )
-                valid_move = 1;
+                valid_move = true;
         }
     }
     return check_all_wins(board, board_rows, board_cols, x, y);
 }
 
-int player_move(int **board, const int board_rows, const int player, const int x) {
+int player_move(int **board, const int board_rows, const enum players player, const int x) {
     int y;
 
     for (y = 0; y < board_rows; y++) {

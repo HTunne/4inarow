@@ -3,14 +3,14 @@
 #include <ncurses.h>
 
 void print_board(WINDOW *game_window) {
-    int x, y, max_x, max_y;
+    int max_x, max_y;
 
     getmaxyx(game_window, max_y, max_x);
 
     mvwprintw(game_window, 1, 5, "1    2    3    4    5    6    7");
-    wattron(game_window, COLOR_PAIR(3));
-    for ( y = 2; y < max_y - 1; y++ ) {
-        for ( x = 2; x < max_x - 2; x++ ) {
+    wattron(game_window, COLOR_PAIR(Board));
+    for ( int y = 2; y < max_y - 1; y++ ) {
+        for ( int x = 2; x < max_x - 2; x++ ) {
             mvwaddch(game_window, y, x, ACS_BLOCK);
         }
     }
