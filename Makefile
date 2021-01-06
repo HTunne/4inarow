@@ -2,7 +2,7 @@
 
 CC=gcc
 SRC=4inarow.c move.c print.c dialogue.c
-CFLAGS=-Wall
+CFLAGS=-Wall -std=c11
 LDFLAGS=-lncurses
 TARGET=4inarow
 
