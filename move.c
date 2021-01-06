@@ -4,24 +4,15 @@
 #include <ncurses.h>
 #include "print.h"
 
-enum win_conditions move_loop(WINDOW *dialogue_window, int **board, const int board_rows, const int board_cols, const enum players player) {
+enum win_conditions move_loop(WINDOW *dialogue_window, enum players **board, const uint8_t board_rows, const uint8_t board_cols, const enum players player) {
 
-    // Check the board isn't full
-    bool its_a_draw = true;
-    for (int col = 0; col < board_cols; col++) {
-        if (board[board_rows - 1][col] == 0) {
-            its_a_draw = false; // Empty square found, it's not a draw
-            break;
-        }
-    }
-    if (its_a_draw) {
+    if (is_draw(board, board_rows, board_cols)) {
         return Draw;
     }
 
-    int x, y;
-    char input;
-    bool valid_move = false;
-    while ( !valid_move ) {
+    int8_t x, y;
+    uint8_t input;
+    while (true) {
         input = wgetch(dialogue_window); // get char '1'-'7' and convert to int of value 0-7
         if (input == 'r')
             return Reset;
@@ -30,16 +21,25 @@ enum win_conditions move_loop(WINDOW *dialogue_window, int **board, const int bo
         if ( x >= 0 && x < board_cols ) {
             y = player_move(board, board_rows, player, x);
             if ( y > -1 )
-                valid_move = true;
+                break;
         }
     }
     return check_all_wins(board, board_rows, board_cols, x, y);
 }
 
-int player_move(int **board, const int board_rows, const enum players player, const int x) {
-    int y;
+bool is_draw(enum players **board, const uint8_t board_rows, const uint8_t board_cols) {
+    // Check the board isn't full
+    for (uint8_t col = 0; col < board_cols; col++) {
+        if (board[board_rows - 1][col] == 0) {
+            return false;
+        }
+    }
+    return true;
+}
 
-    for (y = 0; y < board_rows; y++) {
+
+int8_t player_move(enum players **board, const uint8_t board_rows, const enum players player, const uint8_t x) {
+    for (uint8_t y = 0; y < board_rows; y++) {
         if (board[y][x] == 0) {
             board[y][x] = player;
             return y;
@@ -48,30 +48,28 @@ int player_move(int **board, const int board_rows, const enum players player, co
     return -1;
 }
 
-enum win_conditions check_all_wins(int **board, const int board_rows, const int board_cols, const int x, const int y) {
-    int dir_x, dir_y;
+enum win_conditions check_all_wins(enum players **board, const uint8_t board_rows, const uint8_t board_cols, const uint8_t x, const uint8_t y) {
 
     // Directions in (x,y) to check
-    int dirs[4][2] = {
+    int8_t dirs[4][2] = {
         {0, 1},
         {1, 1},
         {1, 0},
         {1, -1}
     };
 
-    int dir;
-    for (dir = 0; dir < 4; dir++) {
-        dir_x = dirs[dir][0];
-        dir_y = dirs[dir][1];
-
+    for (int8_t dir = 0; dir < 4; dir++) {
         // Check squares in a row in opposing directions
-        if ((check_win(board, board_rows, board_cols, x, y, dir_x, dir_y, 1) + check_win(board, board_rows, board_cols, x, y, -dir_x, -dir_y, 0)) >= 4)
+        if ((check_win(board, board_rows, board_cols, x, y, dirs[dir][0], dirs[dir][1], 1) + // check win in +ve dir
+             check_win(board, board_rows, board_cols, x, y, -dirs[dir][0], -dirs[dir][1], 0) // check win in -ve dir
+            ) >= 4) {
             return Win; // win
+        }
     }
     return No_Win; // no win
 }
 
-int check_win(int **board, const int board_rows, const int board_cols, const int x, const int y, const int dir_x, const int dir_y, int inarow) {
+uint8_t check_win(enum players **board, const uint8_t board_rows, const uint8_t board_cols, const int8_t x, const int8_t y, const int8_t dir_x, const int8_t dir_y, uint8_t inarow) {
     // Recusively crawls from (x, y) in direction (dir_x, dir_y) until...
     if (
         x + dir_x < 0 ||                            // hits left side of board, no win

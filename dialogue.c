@@ -1,5 +1,6 @@
 #include "dialogue.h"
 
+#include <stdint.h>
 #include <stdbool.h>
 #include <ncurses.h>
 #include "move.h"
@@ -7,7 +8,7 @@
 
 bool play_again_dialogue(WINDOW* dialogue_window, const enum players player, enum win_conditions win_condition) {
     // Select dialogue based on win condition
-    char response;
+    uint8_t response;
 
     wclear(dialogue_window);
 

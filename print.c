@@ -19,7 +19,7 @@ void print_board(WINDOW *game_window) {
     wrefresh(game_window);
 }
 
-void print_pieces(WINDOW *game_window, int **board, const int board_rows, const int board_cols, const int width_p_col, const int height_p_row) {
+void print_pieces(WINDOW *game_window, enum players **board, const int board_rows, const int board_cols, const int width_p_col, const int height_p_row) {
     // Loop through board and print prieces.
     int x, y;
     const int piece_offset_x = 4;
