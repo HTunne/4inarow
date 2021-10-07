@@ -17,6 +17,7 @@ int main() {
     cbreak();
     curs_set(0);
 
+
     const uint8_t board_rows = 8;
     const uint8_t board_cols = 7;
 
@@ -41,7 +42,7 @@ int main() {
     uint8_t game_window_height = (height_p_row * board_rows) + game_window_h_offset;
     uint8_t window_width = (width_p_col * board_cols) + window_w_offset;
     uint8_t start_y = (LINES - (title_window_height + game_window_height + dialogue_window_height)) / 2;
-	uint8_t start_x = (COLS - window_width) / 2;
+    uint8_t start_x = (COLS - window_width) / 2;
 
     WINDOW *title_window;
     WINDOW *game_window;
